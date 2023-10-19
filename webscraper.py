@@ -3,7 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 import time
-
+import json
 
 class WebScraper:
     def __init__(self):
@@ -50,8 +50,13 @@ class WebScraper:
     def scrape_wegmans(self, items: list, zipcode: str):
         self._set_store_location(zipcode)
 
+        data = {zipcode: {"Wegmans": {"Items": {}}}}
         for item in items:
-            self._scrape_wegmans(item)
+            data[zipcode]["Wegmans"]["Items"][item] = self._scrape_wegmans(item)[0]
+
+        json_data = json.dumps(data)
+        with open("grocery_data.json", 'w') as file:
+            file.write(json_data)
 
     def _scrape_wegmans(self, item: str):
         """
@@ -75,36 +80,103 @@ class WebScraper:
         unit_prices = self.driver.find_elements(By.CLASS_NAME, value="css-1kh7mkb")
         print(len(unit_prices))
 
-        # Process price data
-        prices, unit_prices = self._process_data(prices, unit_prices)
+        # Process unit price data
+        unit_prices = self._process_unit_price_data(unit_prices)
+
+        # process individual price data
+        prices = [float(price.text.replace('$', "").replace(" /ea", "")) for price in prices]
 
         # Make sure index won't go out of range
         length = len(items) if (len(items) < len(prices)) and (len(items) < len(images)) else len(images)
 
-        for num in range(length):
+        # Set to five items for now
+        for num in range(1):
             wegmans_data[num] = {"name": items[num].text,
-                                 "category": item,
                                  "price": prices[num],
                                  "price_per_ounce": unit_prices[num],
                                  "image": images[num].get_attribute("src")}
-        print(wegmans_data)
-
-    def _process_data(self, prices: list, unit_prices: list):
-
-        # Process price for each item
-        processed_prices = [float(price.text.replace('$', "").replace(" /ea", "")) for price in prices]
-
+        return wegmans_data
+    def _process_unit_price_data(self, unit_prices: list):
+        """Process the text from selenium and format into an integer with unit ounces"""
         processed_unit_prices = []
         # Process unit price
         for price in unit_prices:
-            if "oz" in price.text:
-                processed = price.text.replace("oz", "").replace("(", "").replace(")", "").replace("/", "").replace("$", "")
-                processed_unit_prices.append(processed)
-            elif "lb" in price.text:
-                processed = price.text.replace("lb", "").replace("/", "").replace("$", "")
-                processed_unit_prices.append(processed)
+            if "gal" in price.text:
+                processed: str = (price.text.
+                                  replace("gal", "").
+                                  replace("(", "").
+                                  replace(")", "").
+                                  replace("/", "").
+                                  replace("$", "")
+                                  )
 
-        return processed_prices, processed_unit_prices
+                split_processed = processed.split(" ")
+                # Remove empty strings
+                split_processed = [item for item in split_processed if item]
+                print(split_processed)
+                unit_price = round(float(split_processed[1]) / 64, 2)
+                processed_unit_prices.append(unit_price)
+
+            elif "qt" in price.text:
+                processed: str = (price.text.
+                                  replace("qt", "").
+                                  replace("(", "").
+                                  replace(")", "").
+                                  replace("/", "").
+                                  replace("$", "")
+                                  )
+
+                split_processed = processed.split(" ")
+                # Remove empty strings
+                split_processed = [item for item in split_processed if item]
+                print(split_processed)
+                unit_price = round(float(split_processed[1]) / 32, 2)
+                processed_unit_prices.append(unit_price)
+
+            elif "oz" in price.text:
+                processed: str = (price.text.
+                                  replace("oz", "").
+                                  replace("(", "").
+                                  replace(")", "").
+                                  replace("/", "").
+                                  replace("$", "").
+                                  replace("fl", "")
+                                  )
+
+                # Ex processed format is "16 0.60" which is "(num ounces) (price per ounce)
+                split_processed = processed.split(" ")
+                # Remove empty strings
+                split_processed = [item for item in split_processed if item]
+                print(split_processed)
+                try:
+                    unit_price = round(float(split_processed[1]), 2)
+                    processed_unit_prices.append(unit_price)
+                except ValueError:
+                    print("Item not processed correctly")
+
+            elif "lb" in price.text:
+                processed = float(price.text.replace("lb", "").replace("/", "").replace("$", ""))
+                ounces = processed / 16
+                processed_unit_prices.append(ounces)
+
+            elif "ct" in price.text:
+                processed: str = (price.text.
+                                  replace("ct", "").
+                                  replace("(", "").
+                                  replace(")", "").
+                                  replace("/", "").
+                                  replace("$", "").
+                                  replace("fl", "")
+                                  )
+
+                # Ex processed format is "16 0.60" which is "(num ounces) (price per ounce)
+                split_processed = processed.split(" ")
+                # Remove empty strings
+                split_processed = [item for item in split_processed if item]
+                unit_price = round(float(split_processed[1]), 2)
+                processed_unit_prices.append(unit_price)
+            break
+        return processed_unit_prices
 
     def scrape_shoprite(self, item):
         """

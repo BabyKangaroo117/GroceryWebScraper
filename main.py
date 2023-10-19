@@ -1,10 +1,11 @@
 from webscraper import WebScraper
+from grocery_list import GroceryList
 
 webscraper = WebScraper()
-# webscraper.scrape_wegmans("small pork chops")
 webscraper.retrieve_webpage()
-lst = ["chicken", "bread"]
-webscraper.scrape_wegmans(lst, "18976")
+grocery_list = GroceryList()
+
+webscraper.scrape_wegmans(grocery_list.test_list, "18976")
 
 
 
