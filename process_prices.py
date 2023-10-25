@@ -1,204 +1,68 @@
+import re
+
+
+# Edge cases
+# 32 x 1 lb ($0.92/ea)
+# 2 lb ($2.40/lb)
+# 12 x 50.7 fl oz ($1.25/ea)
+
+
 class ProcessPrices:
-    def process_gal(self, price: str):
-        """String with format '1 gal ($4.36/gal)' """
-
-        processed: str = (price.
-                          replace("gal", "").
-                          replace("(", "").
-                          replace(")", "").
-                          replace("/", "").
-                          replace("$", "")
-                          )
-
-        split_processed = processed.split(" ")
-        # Remove empty strings
-        split_processed = [item for item in split_processed if item]
-        value_to_convert = float(split_processed[1])
-        unit_price = self._conv_table_liquids("Gallon", value_to_convert, True)
-        return unit_price
-
-    def process_quart(self, price: str):
-        """String with format '1 qt ($1.32/qt)' """
-
-        processed: str = (price.
-                          replace("qt", "").
-                          replace("(", "").
-                          replace(")", "").
-                          replace("/", "").
-                          replace("$", "")
-                          )
-
-        split_processed = processed.split(" ")
-        # Remove empty strings
-        split_processed = [item for item in split_processed if item]
-        value_to_convert = float(split_processed[1])
-        unit_price = self._conv_table_liquids("Quart", value_to_convert, True)
-        return unit_price
-
-    def process_ounces(self, price: str):
-        """String with format '32 oz ($0.08/oz)' """
-        processed: str = (price.
-                          replace("oz", "").
-                          replace("(", "").
-                          replace(")", "").
-                          replace("/", "").
-                          replace("$", "")
-                          )
-
-        # Ex processed format is "16 0.60" which is "(num ounces) (price per ounce)
-        split_processed = processed.split(" ")
-        # Remove empty strings
-        split_processed = [item for item in split_processed if item]
-        unit_price = float(split_processed[1])
-
-        return unit_price
-
-    def process_fl_ounces(self, price: str):
-        """String with format '50 fl oz ($0.06/fl oz)' """
-        processed: str = (price.
-                          replace("fl", "").
-                          replace("oz", "").
-                          replace("(", "").
-                          replace(")", "").
-                          replace("/", "").
-                          replace("$", "")
-                          )
-
-        # Ex processed format is "16 0.60" which is "(num ounces) (price per ounce)
-        split_processed = processed.split(" ")
-        # Remove empty strings
-        split_processed = [item for item in split_processed if item]
-        unit_price = float(split_processed[1])
-
-        return unit_price
-
-    def process_fl_oz_ea(self, price):
-        """String with format '12 x 12 fl oz ($0.33/ea)' """
-        processed: str = (price.
-                          replace("fl", "").
-                          replace("x", "").
-                          replace("oz", "").
-                          replace("(", "").
-                          replace(")", "").
-                          replace("/", "").
-                          replace("$", "").
-                          replace("ea", "")
-                          )
-
-        # Ex processed format is "16 0.60" which is "(num ounces) (price per ounce)
-        split_processed = processed.split(" ")
-        # Remove empty strings
-        split_processed = [item for item in split_processed if item]
-        price_per_unit = float(split_processed[2])
-        num_fl_oz_per_unit = float(split_processed[1])
-        print(split_processed)
-        unit_price = round(float(price_per_unit / num_fl_oz_per_unit), 2)
-
-        return unit_price
-
-    def process_oz_ea(self, price):
-        """String with format '6 x 3 oz ($0.45/ea)' """
-        processed: str = (price.
-                          replace("x", "").
-                          replace("oz", "").
-                          replace("(", "").
-                          replace(")", "").
-                          replace("/", "").
-                          replace("$", "").
-                          replace("ea", "")
-                          )
-
-        # Ex processed format is "16 0.60" which is "(num ounces) (price per ounce)
-        split_processed = processed.split(" ")
-        # Remove empty strings
-        split_processed = [item for item in split_processed if item]
-        price_per_unit = float(split_processed[2])
-        num_oz_per_unit = float(split_processed[1])
-        unit_price = round(float(price_per_unit / num_oz_per_unit), 2)
-
-        return unit_price
-
-    def process_lb_ea(self, price):
-        """String with format '32 x 8 lb ($0.92/ea)' """
-        processed: str = (price.
-                          replace("x", "").
-                          replace("lb", "").
-                          replace("(", "").
-                          replace(")", "").
-                          replace("/", "").
-                          replace("$", "").
-                          replace("ea", "")
-                          )
-
-        # Ex processed format is "16 0.60" which is "(num ounces) (price per ounce)
-        split_processed = processed.split(" ")
-        # Remove empty strings
-        split_processed = [item for item in split_processed if item]
-        price_per_unit = float(split_processed[2])
-        num_lb = float(split_processed[1])
-        converted = self._conv_table_solids("Pound", num_lb, False)
-        unit_price = round(float(price_per_unit / converted), 2)
-
-        return unit_price
-
-    def process_lbs(self, price: str):
-        """String with format '$13.99/lb' """
-        processed = float(price.replace("lb", "").replace("/", "").replace("$", ""))
-        converted = self._conv_table_solids("Pound", processed, True)
-        return converted
-
-    def process_multi_lbs(self, price: str):
-        """String with format of '10 lb ($1.70/lb)' """
-        processed: str = (price.
-                          replace("lb", "").
-                          replace("(", "").
-                          replace(")", "").
-                          replace("/", "").
-                          replace("$", "")
-                          )
-
-        # Ex processed format is "16 0.60" which is "(num ounces) (price per ounce)
-        split_processed = processed.split(" ")
-        # Remove empty strings
-        split_processed = [item for item in split_processed if item]
-        print(split_processed)
-        price_per_unit = float(split_processed[1])
-        print(price_per_unit)
-        converted = self._conv_table_solids("Pound", price_per_unit, True)
-        print(converted)
-        return converted
-
-
-    def process_count(self, price):
+    def __init__(self):
         pass
 
-    def _conv_table_solids(self, unit: str, value: int, per_unit: bool):
-        """Convert Unit Prices to ounces"""
+    def process_price(self, raw_unit_price):
+        units = self.find_units(raw_unit_price)
+        processed = self.process(raw_unit_price)
+        unit_price_converted = self.convert(processed, units)
+
+    def find_units(self, raw_unit_price):
+        units = re.search(r'gal|oz|fl|qt|ct|lb|sq', raw_unit_price)
+        type = re.search(r'ea', raw_unit_price)
+        if type:
+            unit_list = [units.group(), type.group()]
+        else:
+            unit_list = [units.group(), None]
+        return unit_list
+
+    def process(self, raw_unit_price):
+        processed = re.sub(r'gal|fl|oz|ea|qt|ct|lb|(|)|$|', "", raw_unit_price)
+        split_processed = processed.split(" ")
+        # Remove empty strings
+        split_processed = [item for item in split_processed if item]
+        return split_processed
+
+    def convert(self, price: list, units: str):
+        if units[1]:
+            num_units = price[-2]
+            price_per_unit = price[-1]
+            convert_units = round(num_units * self._converstion_table(units[0]), 2)
+            unit_price_converted = round((price_per_unit / convert_units), 2)
+            return unit_price_converted
+        else:
+            price_per_unit = price[-1]
+            unit_price_converted = round(price_per_unit / self._converstion_table(units[0]), 2)
+            return unit_price_converted
+
+    def converstion_table(self, unit: str):
+        """Convert unit price solids to oz and liquids to fl oz"""
         unit_conversions = {
-            "Pound": 16,
-            "Kilogram": 35.274,
-            "Gram": 0.035,
+            "fl": 1,
+            "oz": 1,
+            "lb": 16,
+            "kg": 35.274,
+            "g": 0.035,
             "Tablespoon": 0.5,
-            "Teaspoon": 0.17
-        }
-
-        if per_unit:
-            return round(value / unit_conversions[unit], 2)
-        else:
-            return round(value * unit_conversions[unit], 2)
-
-    def _conv_table_liquids(self, unit: str, value: int, per_unit: bool):
-        """Unit prices to fl oz"""
-        unit_conversions = {
-            "Liter": 33.814,
+            "Teaspoon": 0.17,
+            "L": 33.814,
             "Milliliters": 0.034,
-            "Gallon": 128,
-            "Quart": 32,
+            "gal": 128,
+            "qt": 32,
             "Pint": 16,
-            "Cup": 8
+            "Cup": 8,
+            "sq": 1
         }
-        if per_unit:
-            return round(value / unit_conversions[unit], 2)
-        else:
-            return round(value * unit_conversions[unit], 2)
+        return unit_conversions[unit]
+
+
 

@@ -14,7 +14,6 @@ class WebScraper:
         self.chrome_options.add_argument("--headless")
         # self.chrome_options.add_experimental_option("detach", True)
         self.driver = webdriver.Chrome(options=self.chrome_options)
-        self.process_prices = ProcessPrices()
 
     def retrieve_webpage(self):
         """
@@ -35,28 +34,26 @@ class WebScraper:
         reload_button.click()
         time.sleep(2)
 
-
     def scrape_wegmans(self, items: list, zipcode: str):
         self._set_store_location(zipcode)
 
         data = {zipcode: {"Wegmans": {"Items": {}}}}
         for item in items:
-            data[zipcode]["Wegmans"]["Items"][item] = self._scrape_wegmans(item)
+            data[zipcode]["Wegmans"]["Items"][item] = self._process_data(item)
 
         json_data = json.dumps(data)
         with open("grocery_data.json", 'w') as file:
             file.write(json_data)
 
-    def _scrape_wegmans(self, item: str):
+    def scrape_website(self, item):
         """
-        Scrape wegmans website for an item
-        :param item: Item to be searched
-        :return:
-        """
+                Scrape wegmans website for an item
+                :param item: Item to be searched
+                :return:
+                """
 
         self.driver.get(f"https://shop.wegmans.com/search?search_term={item}&search_is_autocomplete=true")
         time.sleep(2)
-        wegmans_data = {}
 
         # Find all the item names, images on webpage
         # Scroll down a number of times to scrape more items
@@ -77,14 +74,18 @@ class WebScraper:
         print(len(prices))
         print(len(unit_prices))
 
+        return items, prices, images, unit_prices
+
+    def _process_data(self, item: str):
+        wegmans_data = []
+        process_price = ProcessPrices()
+        items, prices, images, unit_prices = self.scrape_website(item)
         # Extract strings from selenium unit price objects. Makes unit testing following functions easier
         unit_price_str = [price.text for price in unit_prices]
-
         # Process unit price data
-        unit_prices = self._process_unit_price_data(unit_price_str)
-
+        unit_prices = process_price(unit_price_str)
         # process individual price data
-        #prices = [float(price.text.replace('$', "").replace(" /ea", "")) for price in prices]
+        prices = [float(price.text.replace('$', "").replace(" /ea", "")) for price in prices]
 
         # Make sure index won't go out of range
         length = len(items) if (len(items) < len(prices)) and (len(items) < len(images)) else len(images)
@@ -119,32 +120,11 @@ class WebScraper:
 
     def process_unit_price_data(self, unit_prices: list):
         """Process the text from selenium and format into an integer with unit ounces"""
+        process_price = ProcessPrices()
         processed_unit_prices = []
         # Process unit price
         for price in unit_prices:
-            print(price)
-            if "fl" in price and "ea" in price:
-                processed_unit_prices.append(self.process_prices.process_fl_oz_ea(price))
-            elif "oz" in price and "ea" in price:
-                processed_unit_prices.append(self.process_prices.process_oz_ea(price))
-            elif "lb" in price and "ea" in price:
-                processed_unit_prices.append(self.process_prices.process_lb_ea(price))
-            elif "lb" in price and "(" in price:
-                processed_unit_prices.append(self.process_prices.process_multi_lbs(price))
-            elif "fl" in price and "oz" in price:
-                processed_unit_prices.append(self.process_prices.process_fl_ounces(price))
-            elif "gal" in price:
-                processed_unit_prices.append(self.process_prices.process_gal(price))
-            elif "qt" in price:
-                processed_unit_prices.append(self.process_prices.process_quart(price))
-            elif "oz" in price:
-                processed_unit_prices.append(self.process_prices.process_ounces(price))
-            elif "lb" in price:
-                processed_unit_prices.append(self.process_prices.process_lbs(price))
-
-            elif "ct" in price:
-                processed_unit_prices.append(0.5)
-
+            processed_unit_prices = process_price(price)
 
         return processed_unit_prices
 
