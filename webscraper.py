@@ -1,6 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import ElementClickInterceptedException
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.action_chains import ActionChains
 import time
 import json
@@ -20,20 +23,30 @@ class WebScraper:
         Retrieve webpage and get past initial website command
         :return:
         """
-        self.driver.get("https://shop.wegmans.com/search?search_term=chicken&search_is_autocomplete=true")
+        try:
+            self.driver.get("https://shop.wegmans.com/search?search_term=chicken&search_is_autocomplete=true")
+        except Exception as e:
+            print(f"Error occurred while retrieving the webpage: {e}")
 
-        # Click Wegman's in store button
         time.sleep(2)
-        in_store_button = self.driver.find_element(By.XPATH,
-                                                   value='//*[@id="shopping-selector-shop-context-intent-instore"]')
-        in_store_button.click()
+        try:
+            # Click Wegman's in store button
+            in_store_button = self.driver.find_element(By.XPATH,
+                                                       value='//*[@id="shopping-selector-shop-context-intent-instore"]')
+            in_store_button.click()
+        except (NoSuchElementException, ElementClickInterceptedException) as e:
+            print(f"Error occurred while clicking in store button: {e}")
 
-        # Click the reload button
-        time.sleep(2)
-        reload_button = self.driver.find_element(By.XPATH, value='//*[@id="react"]/div[2]/div/button')
-        reload_button.click()
         time.sleep(2)
 
+        try:
+            # Click the reload button
+            reload_button = self.driver.find_element(By.XPATH, value='//*[@id="react"]/div[2]/div/button')
+            reload_button.click()
+        except (NoSuchElementException, ElementClickInterceptedException) as e:
+            print(f"Error occurred while clicking reload button: {e}")
+
+        time.sleep(2)
     def scrape_wegmans(self, items: list, zipcode: str):
         self._set_store_location(zipcode)
 
@@ -45,57 +58,61 @@ class WebScraper:
         with open("grocery_data.json", 'w') as file:
             file.write(json_data)
 
-    def scrape_website(self, item):
-        """
-                Scrape wegmans website for an item
-                :param item: Item to be searched
-                :return:
-                """
-
+    def _item_block_html(self, item):
         self.driver.get(f"https://shop.wegmans.com/search?search_term={item}&search_is_autocomplete=true")
-        time.sleep(2)
+        time.sleep(3)
 
         # Find all the item names, images on webpage
         # Scroll down a number of times to scrape more items
-        scrolls = 3
         items = []
-        prices = []
-        images = []
-        unit_prices = []
-        print(item)
-
+        scrolls = 3
         for i in range(scrolls):
-            items.extend(self.driver.find_elements(By.CLASS_NAME, value="css-131yigi"))
-            prices.extend(self.driver.find_elements(By.CLASS_NAME, value="css-zqx11d"))
-            images.extend(self.driver.find_elements(By.CLASS_NAME, value="css-15zffbe"))
-            unit_prices.extend(self.driver.find_elements(By.CLASS_NAME, value="css-1kh7mkb"))
+            items.extend(self.driver.find_elements(By.CLASS_NAME, value="css-1u1k9gp"))
             self.driver.find_element(By.TAG_NAME, value="body").send_keys(Keys.PAGE_DOWN)
-        print(len(items))
-        print(len(prices))
-        print(len(unit_prices))
+        print(items)
+        return items
 
-        return items, prices, images, unit_prices
+    def _process_item_block(self, item_objects: list[WebElement]):
+        name = []
+        price = []
+        unit_price = []
+        image_url = []
+        for item in item_objects:
+            name.append(item.find_element(By.CLASS_NAME, value="css-131yigi").text)
+            price.append(item.find_element(By.CLASS_NAME, value="css-zqx11d").text)
+            unit_price.append(item.find_element(By.CLASS_NAME, value="css-1kh7mkb").text)
+            image_url.append(item.find_element(By.CLASS_NAME, value="css-15zffbe").get_attribute("src"))
+
+        return name, price, unit_price, image_url
+
+    def scrape_website(self, item):
+
+        html_block = self._item_block_html(item)
+        name, price, unit_price, image = self._process_item_block(html_block)
+        return name, price, unit_price, image
+
 
     def _process_data(self, item: str):
         wegmans_data = []
         process_price = ProcessPrices()
-        items, prices, images, unit_prices = self.scrape_website(item)
+        items, prices, unit_prices, images = self.scrape_website(item)
         # Extract strings from selenium unit price objects. Makes unit testing following functions easier
-        unit_price_str = [price.text for price in unit_prices]
         # Process unit price data
-        unit_prices = process_price(unit_price_str)
+        processed_unit_prices = []
+        for price in unit_prices:
+            processed_unit_prices.append(process_price.process_price(price))
         # process individual price data
         prices = [float(price.text.replace('$', "").replace(" /ea", "")) for price in prices]
 
         # Make sure index won't go out of range
-        length = len(items) if (len(items) < len(prices)) and (len(items) < len(images)) else len(images)
+        length = len(items)
 
         # Set to five items for now
         for num in range(length):
             try:
                 wegmans_data[num] = {"name": items[num],
                                      "price": prices[num],
-                                     "price_per_ounce": unit_prices[num],
+                                     "price_per_ounce": processed_unit_prices[num],
                                      "image": images[num].get_attribute("src")}
             except IndexError:
                 with open("item_issues", "a") as file:
@@ -124,7 +141,11 @@ class WebScraper:
         processed_unit_prices = []
         # Process unit price
         for price in unit_prices:
-            processed_unit_prices = process_price(price)
+            try:
+                processed_unit_prices.append(process_price(price))
+            except Exception as e:
+                print("Didn't process unit price")
+                processed_unit_prices.append("")
 
         return processed_unit_prices
 
@@ -163,6 +184,7 @@ class WebScraper:
                                  "image": images[num].get_attribute("src")}
 
         print(shoprite_data)
+
     def close_browser(self):
         self.driver.quit()
 

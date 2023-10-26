@@ -15,6 +15,7 @@ class ProcessPrices:
         units = self.find_units(raw_unit_price)
         processed = self.process(raw_unit_price)
         unit_price_converted = self.convert(processed, units)
+        return unit_price_converted
 
     def find_units(self, raw_unit_price):
         units = re.search(r'gal|oz|fl|qt|ct|lb|sq', raw_unit_price)
@@ -32,16 +33,16 @@ class ProcessPrices:
         split_processed = [item for item in split_processed if item]
         return split_processed
 
-    def convert(self, price: list, units: str):
+    def convert(self, price: list, units: list):
         if units[1]:
             num_units = price[-2]
             price_per_unit = price[-1]
-            convert_units = round(num_units * self._converstion_table(units[0]), 2)
+            convert_units = round(num_units * self.converstion_table(units[0]), 2)
             unit_price_converted = round((price_per_unit / convert_units), 2)
             return unit_price_converted
         else:
             price_per_unit = price[-1]
-            unit_price_converted = round(price_per_unit / self._converstion_table(units[0]), 2)
+            unit_price_converted = round(price_per_unit / self.converstion_table(units[0]), 2)
             return unit_price_converted
 
     def converstion_table(self, unit: str):
@@ -60,7 +61,8 @@ class ProcessPrices:
             "qt": 32,
             "Pint": 16,
             "Cup": 8,
-            "sq": 1
+            "sq": 1,
+            "ct": 1
         }
         return unit_conversions[unit]
 
