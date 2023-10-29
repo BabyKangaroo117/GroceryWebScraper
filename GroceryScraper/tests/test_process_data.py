@@ -1,7 +1,7 @@
 import os,  sys
-import json
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from process_prices import ProcessPrices
+from GroceryScraper.groceryscraper.process_prices import ProcessPrices
 
 
 def test_find_units():

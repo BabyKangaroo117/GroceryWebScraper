@@ -1,5 +1,5 @@
 from webscraper import WebScraper
-from grocery_list import GroceryList
+from GroceryScraper.groceryscraper.grocery_list import GroceryList
 
 webscraper = WebScraper()
 webscraper.retrieve_webpage()

@@ -15,7 +15,7 @@ from webscraper import WebScraper
 #             print()
 
 webscrape = WebScraper()
-with open("grocery_data.json", "r") as file:
+with open("../grocery_data.json", "r") as file:
     data = json.load(file)
 
 items = data['18976']['Wegmans']["Items"]

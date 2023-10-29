@@ -4,10 +4,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.common.action_chains import ActionChains
 import time
 import json
-from process_prices import ProcessPrices
+from GroceryScraper.groceryscraper.process_prices import ProcessPrices
 
 
 class WebScraper:
@@ -55,14 +54,14 @@ class WebScraper:
             data[zipcode]["Wegmans"]["Items"][item] = self._process_data(item)
 
         json_data = json.dumps(data)
-        with open("grocery_data.json", 'w') as file:
+        with open("../grocery_data.json", 'w') as file:
             file.write(json_data)
 
-    def _item_block_html(self, item):
+    def item_block_html(self, item):
         self.driver.get(f"https://shop.wegmans.com/search?search_term={item}&search_is_autocomplete=true")
         time.sleep(3)
 
-        # Find all the item names, images on webpage
+        # Get html block that contains html name, price, unit price, image url
         # Scroll down a number of times to scrape more items
         items = []
         scrolls = 3
@@ -72,23 +71,38 @@ class WebScraper:
         print(items)
         return items
 
-    def _process_item_block(self, item_objects: list[WebElement]):
+    def process_item_block(self, item_objects: list[WebElement]):
         name = []
         price = []
         unit_price = []
         image_url = []
         for item in item_objects:
-            name.append(item.find_element(By.CLASS_NAME, value="css-131yigi").text)
-            price.append(item.find_element(By.CLASS_NAME, value="css-zqx11d").text)
-            unit_price.append(item.find_element(By.CLASS_NAME, value="css-1kh7mkb").text)
-            image_url.append(item.find_element(By.CLASS_NAME, value="css-15zffbe").get_attribute("src"))
+            try:
+                name.append(item.find_element(By.CLASS_NAME, value="css-131yigi").text)
+            except NoSuchElementException:
+                name.append("Not found")
+
+            try:
+                price.append(item.find_element(By.CLASS_NAME, value="css-zqx11d").text)
+            except NoSuchElementException:
+                price.append("Not found")
+
+            try:
+                unit_price.append(item.find_element(By.CLASS_NAME, value="css-1kh7mkb").text)
+            except NoSuchElementException:
+                unit_price.append("Not found")
+
+            try:
+                image_url.append(item.find_element(By.CLASS_NAME, value="css-15zffbe").get_attribute("src"))
+            except NoSuchElementException:
+                image_url.append("Not found")
 
         return name, price, unit_price, image_url
 
     def scrape_website(self, item):
 
-        html_block = self._item_block_html(item)
-        name, price, unit_price, image = self._process_item_block(html_block)
+        html_block = self.item_block_html(item)
+        name, price, unit_price, image = self.process_item_block(html_block)
         return name, price, unit_price, image
 
 
