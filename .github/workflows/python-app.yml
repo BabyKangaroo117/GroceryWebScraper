@@ -1,0 +1,44 @@
+name: Grocery Web Scraper Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.11  # Specify the Python version you want to use
+
+    - name: Install Poetry
+      run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
+
+    - name: Install dependencies
+      run: poetry install
+
+    - name: Run tests with coverage
+      run: poetry run coverage run --source=. -m pytest
+
+    - name: Generate coverage report
+      run: poetry run coverage report
+
+    - name: Save coverage report as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: ./htmlcov  # Adjust this path based on your coverage report location
+
+    - name: Generate HTML coverage report
+      run: poetry run coverage html
