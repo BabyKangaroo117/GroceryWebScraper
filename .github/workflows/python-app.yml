@@ -27,6 +27,9 @@ jobs:
     - name: Install Poetry
       run: pip install poetry
 
+    - name: CD to package
+      run: cd GroceryScraper
+
     - name: Install dependencies
       run: poetry install
 
