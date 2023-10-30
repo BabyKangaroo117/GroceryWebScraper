@@ -38,7 +38,9 @@ jobs:
         poetry run coverage run --source=. -m pytest
 
     - name: Generate coverage report
-      run: poetry run coverage report
+      run: |
+        cd GroceryScraper
+        poetry run coverage report
 
     - name: Save coverage report as artifact
       uses: actions/upload-artifact@v2
@@ -47,4 +49,6 @@ jobs:
         path: ./GroceryScraper/htmlcov  # Adjust this path based on your coverage report location
 
     - name: Generate HTML coverage report
-      run: poetry run coverage html
+      run: |
+        cd GroceryScraper
+        poetry run coverage html
