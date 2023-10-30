@@ -27,14 +27,15 @@ jobs:
     - name: Install Poetry
       run: pip install poetry
 
-    - name: CD to package
-      run: cd GroceryScraper
-
     - name: Install dependencies
-      run: poetry install
+      run: |
+        cd GroceryScraper
+        poetry install
 
     - name: Run tests with coverage
-      run: poetry run coverage run --source=. -m pytest
+      run: |
+        cd GroceryScraper
+        poetry run coverage run --source=. -m pytest
 
     - name: Generate coverage report
       run: poetry run coverage report
@@ -43,7 +44,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: coverage-report
-        path: ./htmlcov  # Adjust this path based on your coverage report location
+        path: ./GroceryScraper/htmlcov  # Adjust this path based on your coverage report location
 
     - name: Generate HTML coverage report
       run: poetry run coverage html
