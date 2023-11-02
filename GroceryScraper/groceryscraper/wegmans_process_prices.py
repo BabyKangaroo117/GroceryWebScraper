@@ -7,7 +7,7 @@ import re
 # 12 x 50.7 fl oz ($1.25/ea)
 
 
-class ProcessPrices:
+class WegmansProcessPrices:
     def __init__(self):
         pass
 

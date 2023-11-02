@@ -6,10 +6,10 @@ from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.remote.webelement import WebElement
 import time
 import json
-from GroceryScraper.groceryscraper.process_prices import ProcessPrices
+from wegmans_process_prices import WegmansProcessPrices
 
 
-class WebScraper:
+class WegmansWebScraper:
     def __init__(self):
         self.chrome_options = webdriver.ChromeOptions()
         self.chrome_options.add_argument("--disable-javascript")
@@ -54,7 +54,7 @@ class WebScraper:
             data[zipcode]["Wegmans"]["Items"][item] = self._process_data(item)
 
         json_data = json.dumps(data)
-        with open("../grocery_data.json", 'w') as file:
+        with open("grocery_data.json", 'w') as file:
             file.write(json_data)
 
     def item_block_html(self, item):
@@ -108,7 +108,7 @@ class WebScraper:
 
     def _process_data(self, item: str):
         wegmans_data = []
-        process_price = ProcessPrices()
+        process_price = WegmansProcessPrices()
         items, prices, unit_prices, images = self.scrape_website(item)
         # Extract strings from selenium unit price objects. Makes unit testing following functions easier
         # Process unit price data
@@ -151,7 +151,7 @@ class WebScraper:
 
     def process_unit_price_data(self, unit_prices: list):
         """Process the text from selenium and format into an integer with unit ounces"""
-        process_price = ProcessPrices()
+        process_price = WegmansProcessPrices()
         processed_unit_prices = []
         # Process unit price
         for price in unit_prices:

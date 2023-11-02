@@ -1,11 +1,7 @@
-import os,  sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from GroceryScraper.groceryscraper.process_prices import ProcessPrices
-
+from GroceryScraper.groceryscraper.wegmans_process_prices import WegmansProcessPrices
 
 def test_find_units():
-    process_price = ProcessPrices()
+    process_price = WegmansProcessPrices()
     price_1 = "1 gal ($5.99/gal)"
     units = process_price.find_units(price_1)
     assert units[0] == "gal"
@@ -18,7 +14,7 @@ def test_find_units():
 
 
 def test_convert():
-    process_price = ProcessPrices()
+    process_price = WegmansProcessPrices()
     price = [16, 5.99]
     units = ["lb", "ea"]
     convert = 16 * 16

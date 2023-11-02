@@ -1,7 +1,4 @@
-import os,  sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from GroceryScraper.groceryscraper.webscraper import WebScraper
+from GroceryScraper.groceryscraper.wegmans_webscraper import WegmansWebScraper
 from GroceryScraper.groceryscraper.grocery_list import GroceryList
 
 
