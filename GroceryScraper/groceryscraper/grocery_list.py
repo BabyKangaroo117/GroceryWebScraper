@@ -1,6 +1,6 @@
 class GroceryList:
     def __init__(self):
-        self.grocery_list = grocery_items = [
+        self.grocery_list = [
             "2% reduced-fat milk",
             "Large white eggs",
             "Sliced white bread",

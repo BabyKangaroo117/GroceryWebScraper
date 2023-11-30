@@ -7,12 +7,12 @@ with open("grocery_data.json", "r") as file:
 items = data['18976']['Wegmans']["Items"]
 
 for key, value in items.items():
+    print(key)
     for key_2, value_2 in value.items():
-        if "ea" in value_2["price_per_ounce"]:
-            print(value_2["name"])
-            print(value_2["price"], end="     ")
-            print(value_2["price_per_ounce"])
-            print()
+        print(value_2["name"])
+        print(value_2["price"])
+        print(value_2["price_per_ounce"])
+        print()
 
 # webscrape = WegmansWebScraper()
 # with open("../grocery_data.json", "r") as file:

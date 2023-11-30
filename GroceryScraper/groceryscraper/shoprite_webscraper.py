@@ -67,7 +67,7 @@ class ShopriteWebScraper:
             data[zipcode]["Shoprite"]["Items"][item] = self._process_data(item)
 
         json_data = json.dumps(data)
-        with open("grocery_data_shoprite.json", 'w') as file:
+        with open("shoprite_grocery_data.json", 'w') as file:
             file.write(json_data)
 
     def item_block_html(self, item):
@@ -146,13 +146,24 @@ class ShopriteWebScraper:
         items, prices, unit_prices, images = self.scrape_website(item)
         # Extract strings from selenium unit price objects. Makes unit testing following functions easier
         # Process unit price data
-        processed_unit_prices = []
-        for price in unit_prices:
-            processed_unit_prices.append(process_price.process_unit_price(price))
-        # process individual price date
-        processed_prices = []
-        for price in prices:
-            processed_prices.append(process_price.process_individual_price(price))
+        units = []
+        unit_prices_processed = []
+        count = 0
+        for unit_price in unit_prices:
+            if unit_price != "Not found":
+                units.append(process_price.convert_unit_type(process_price.find_units(unit_price)))
+                unit_prices_processed.append(process_price.process_unit_price(unit_price))
+            else:
+                units.append("Not Found")
+                unit_prices_processed.append("Not Found")
+
+            # processed_unit_prices.append(process_price.process_price_converted(unit_price))
+            count += 1
+
+        # process individual price data
+        prices = [
+            process_price.process_individual_price(price) if price != "Not found" else "Not found" for
+            price in prices]
 
         # Make sure index won't go out of range
         length = len(items)
@@ -160,14 +171,14 @@ class ShopriteWebScraper:
         # Set to five items for now
         for num in range(length):
             try:
-                shoprite_data[num] = {"name": items[num],
-                                     "price": processed_prices[num],
-                                     "price_per_ounce": processed_unit_prices[num],
-                                     "image": images[num].get_attribute("src")}
+                shoprite_data.append({"name": items[num],
+                                      "price": prices[num],
+                                      "unit_price": unit_prices_processed[num],
+                                      "units": units[num],
+                                      "image": images[num]})
             except IndexError:
                 with open("item_issues", "a") as file:
                     file.write(item)
-
 
         # Currently set to return one item which is the cheapest by unit of ounces
         #cheapest_item = self._find_cheapest_item(wegmans_data)
