@@ -55,7 +55,7 @@ class ShopriteProcessPrices:
             "gal": 128,
             "qt": 32,
             "pt": 16,
-            "g": 28.3495,
+            "g": 0.03527396,
             "sq ft": 1,
             "ct": 1,
             "each": 1,

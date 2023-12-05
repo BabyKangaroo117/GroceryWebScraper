@@ -55,7 +55,7 @@ def test_find_units():
 
     price = "635.8 sq ft ($0.03/sq ft)"
     units = process_price.find_units(price)
-    assert units[0] == 'sq'
+    assert units[0] == 'sq ft'
     assert not units[1]
 
     price = "12 x 50.7 fl oz ($1.25/ea)"

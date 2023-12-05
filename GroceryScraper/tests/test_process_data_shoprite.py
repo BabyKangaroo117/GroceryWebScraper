@@ -17,11 +17,19 @@ def test_process_price():
     processed_price = process_price.process_individual_price(price_1)
     assert float(processed_price) == 3.49
 
-def test_convert():
+def test_convert_lb():
     process_price = ShopriteProcessPrices()
     price = "3.49"
     units = "lb"
     expected = round((float(price)/16), 2)
     assert expected == process_price.convert(price, units)
+
+def test_convert_grams():
+    process_price = ShopriteProcessPrices()
+    price = "0.02"
+    units = "g"
+    expected = round((float(price)/0.03527396), 2)
+    assert expected == process_price.convert(price, units)
+
 
 

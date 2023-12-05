@@ -1,26 +1,22 @@
 import requests
 
-class Database:
+
+class DatabaseConnection:
     def __init__(self):
         self.server_name = "https://frugl-server.database.windows.net"
 
-    def post_area_item(self):
+    def post_area_item(self, postal, item_id, shoprite_unit_price, wegmans_unit_price, shoprite_item, wegmans_item, units):
         post_items = "/api/AreaItems"
         payload = {
-          "postalCode": 0,
-          "itemId": 0,
-          "shopriteUnitPrice": 0,
-          "wegmansUnitPrice": 0,
-          "shopriteItem": "string",
-          "wegmansItem": "string",
-          "itemUnits": "string",
-          "item": {
-            "itemId": 0,
-            "itemName": "string"
-          },
-          "postalCodeNavigation": {
-            "postalCode1": 0
-          }
+          "postalCode": postal,
+          "itemId": item_id,
+          "shopriteUnitPrice": shoprite_unit_price,
+          "wegmansUnitPrice": wegmans_unit_price,
+          "shopriteItem": shoprite_item,
+          "wegmansItem": wegmans_item,
+          "itemUnits": units,
+          "item": None,
+          "postalCodeNavigation": None
         }
 
         response = requests.post(self.server_name + post_items, json=payload)
