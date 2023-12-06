@@ -26,4 +26,6 @@
 - Comment out the webscrapers in main.py
 - Run the format_for_sql_insert() function
 
-
+## CI
+- GitHub Workflows is used to run pytest when there is a push or pull request from master
+- There are many more tests that need to be written, but the structure for the workflow is set up
