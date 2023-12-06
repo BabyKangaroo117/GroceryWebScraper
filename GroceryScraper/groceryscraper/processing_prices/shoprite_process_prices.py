@@ -12,7 +12,7 @@ class ShopriteProcessPrices:
         pass
 
     def process_individual_price(self, raw_price):
-        processed = re.sub(r'gal|fl|oz|each|qt|ct|lb|\(|\)|\$|/|ea| |avg|pint|', "", raw_price)
+        processed = re.sub(r'was|gal|fl|oz|each|qt|ct|lb|\(|\)|\$|/|ea| |avg|pint|', "", raw_price)
         return processed
 
 

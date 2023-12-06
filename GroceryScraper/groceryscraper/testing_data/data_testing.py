@@ -1,8 +1,8 @@
 import json
-from shoprite_webscraper import ShopriteWebScraper
+from GroceryScraper.groceryscraper.webscrapers.shoprite_webscraper import ShopriteWebScraper
 
 
-from wegmans_webscraper import WegmansWebScraper
+from GroceryScraper.groceryscraper.webscrapers.wegmans_webscraper import WegmansWebScraper
 # with open("grocery_data.json", "r") as file:
 #     data = json.load(file)
 #
@@ -44,7 +44,7 @@ def update_items_shoprite():
         file.write(json_data_2)
 
 def update_item_wegmans():
-    with open("wegmans_grocery_data.json") as file:
+    with open("../grocery_data/wegmans_grocery_data.json") as file:
         data = file.read()
 
     json_data = json.loads(data)
@@ -52,7 +52,7 @@ def update_item_wegmans():
     data = websraper.scrape_wegmans("Vanilla ice cream", 18976)
     json_data["18976"]["Wegmans"]["Items"]["Vanilla ice cream"] = data
 
-    with open("wegmans_grocery_data.json", 'w') as file:
+    with open("../grocery_data/wegmans_grocery_data.json", 'w') as file:
         json_data_2 = json.dumps(json_data)
         file.write(json_data_2)
 

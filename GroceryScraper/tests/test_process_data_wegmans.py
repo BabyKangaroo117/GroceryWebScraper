@@ -1,4 +1,4 @@
-from GroceryScraper.groceryscraper.wegmans_process_prices import WegmansProcessPrices
+from GroceryScraper.groceryscraper.processing_prices.wegmans_process_prices import WegmansProcessPrices
 
 def test_find_units():
     process_price = WegmansProcessPrices()

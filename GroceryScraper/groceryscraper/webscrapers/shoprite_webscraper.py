@@ -7,8 +7,8 @@ from selenium.webdriver.common.proxy import Proxy, ProxyType
 from selenium.webdriver.remote.webelement import WebElement
 import time
 import json
-from shoprite_process_prices import ShopriteProcessPrices
-import re
+from GroceryScraper.groceryscraper.processing_prices.shoprite_process_prices import ShopriteProcessPrices
+import os
 
 class ShopriteWebScraper:
     def __init__(self):
@@ -60,14 +60,18 @@ class ShopriteWebScraper:
         captch.click()
 
     def scrape_shoprite(self, items: list, zipcode: str):
-        #self._set_store_location(zipcode)
+        # Get the current directory
+        current_directory = os.path.dirname(__file__)
+
+        # Construct the path to the JSON file in grocery_data
+        json_file_path = os.path.join(current_directory, '..', 'grocery_data', 'shoprite_grocery_data.json')
 
         data = {zipcode: {"Shoprite": {"Items": {}}}}
         for item in items:
             data[zipcode]["Shoprite"]["Items"][item] = self._process_data(item)
 
         json_data = json.dumps(data)
-        with open("shoprite_grocery_data.json", 'w') as file:
+        with open(json_file_path, 'w') as file:
             file.write(json_data)
 
     def item_block_html(self, item):
@@ -148,7 +152,6 @@ class ShopriteWebScraper:
         # Process unit price data
         units = []
         unit_prices_processed = []
-        count = 0
         for unit_price in unit_prices:
             if unit_price != "Not found":
                 units.append(process_price.convert_unit_type(process_price.find_units(unit_price)))
@@ -157,8 +160,6 @@ class ShopriteWebScraper:
                 units.append("Not Found")
                 unit_prices_processed.append("Not Found")
 
-            # processed_unit_prices.append(process_price.process_price_converted(unit_price))
-            count += 1
 
         # process individual price data
         prices = [
@@ -177,21 +178,12 @@ class ShopriteWebScraper:
                                       "units": units[num],
                                       "image": images[num]})
             except IndexError:
-                with open("item_issues", "a") as file:
+                with open("../item_issues", "a") as file:
                     file.write(item)
 
         # Currently set to return one item which is the cheapest by unit of ounces
         #cheapest_item = self._find_cheapest_item(wegmans_data)
         return shoprite_data
-
-
-    def _find_cheapest_item(self, items: dict):
-        """Find the cheapest item of the scraped data"""
-        smallest = items[0]
-        for key, value in items.items():
-            if value["price_per_ounce"] < smallest["price_per_ounce"]:
-                smallest = value
-        return smallest
 
     def close_browser(self):
         self.driver.quit()

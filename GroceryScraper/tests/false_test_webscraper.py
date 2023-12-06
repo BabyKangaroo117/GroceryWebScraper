@@ -1,7 +1,3 @@
-from GroceryScraper.groceryscraper.wegmans_webscraper import WegmansWebScraper
-from GroceryScraper.groceryscraper.grocery_list import GroceryList
-
-
 # def test_scrape_wegmans():
 #     webscrape = WebScraper()
 #     webscrape.retrieve_webpage()

@@ -1,4 +1,4 @@
-from GroceryScraper.groceryscraper.shoprite_process_prices import ShopriteProcessPrices
+from GroceryScraper.groceryscraper.processing_prices.shoprite_process_prices import ShopriteProcessPrices
 
 def test_find_units():
     process_price = ShopriteProcessPrices()

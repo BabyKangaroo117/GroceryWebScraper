@@ -6,7 +6,7 @@ from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.remote.webelement import WebElement
 import time
 import json
-from wegmans_process_prices import WegmansProcessPrices
+from GroceryScraper.groceryscraper.processing_prices.wegmans_process_prices import WegmansProcessPrices
 
 
 class WegmansWebScraper:
@@ -55,7 +55,7 @@ class WegmansWebScraper:
             data[zipcode]["Wegmans"]["Items"][item] = self._process_data(item)
 
         json_data = json.dumps(data)
-        with open("wegmans_grocery_data.json", 'w') as file:
+        with open("../grocery_data/wegmans_grocery_data.json", 'w') as file:
             file.write(json_data)
 
     def item_block_html(self, item):
@@ -144,7 +144,7 @@ class WegmansWebScraper:
                                      "units": units[num],
                                      "image": images[num]})
             except IndexError:
-                with open("item_issues", "a") as file:
+                with open("../item_issues", "a") as file:
                     file.write(item + "\n")
 
 
